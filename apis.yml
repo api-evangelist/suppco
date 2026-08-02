@@ -1,9 +1,26 @@
 aid: suppco
 name: SuppCo
-description: SuppCo is a company surfaced as a portfolio company of union-square-ventures and added to
-  the API Evangelist network as a stub for enrichment. This profile is a lead awaiting the enrichment
-  pipeline.
+description: SuppCo is a consumer supplement tracking and optimization platform, describing itself as
+  the world's first real supplement tracker and optimizer. Its iOS and Android app lets people log their
+  supplement stack and get a personalized StackScore across quality, dosing, goal coverage, and nutrient
+  levels, plus a TrustScore that rates products on 29 attributes. It is backed by a database of 160,000+
+  products, 20,000+ research studies, and 80+ expert protocols from functional-medicine practitioners.
+  SuppCo is in open beta (free, with an optional Pro tier) and was acquired by Function Health. No public
+  developer API, OpenAPI, or developer portal is currently published; this profile captures its public
+  web, security, and legal surface. Surfaced as a portfolio company of Union Square Ventures.
 url: https://raw.githubusercontent.com/api-evangelist/suppco/refs/heads/main/apis.yml
+accessModel:
+  pricing: unknown
+  onboarding: unknown
+  trial: false
+  try_now: false
+  public: false
+  label: Unknown
+  confidence: low
+  source: []
+  generated: '2026-07-22'
+  method: derived
+image: https://supp.co/favicon.ico
 x-type: company
 x-source: vc-portfolio
 x-backed-by:
@@ -12,9 +29,16 @@ x-tier: stub
 x-tier-reason: portfolio-lead
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-17'
+modified: '2026-07-21'
 tags:
 - Company
+- Supplements
+- Health
+- Wellness
+- Nutrition
+- Consumer App
+- Mobile
+- Health Data
 apis: []
 maintainers:
 - FN: Kin Lane
@@ -22,5 +46,26 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: SecurityTxt
+  url: well-known/suppco-security.txt
+- type: WellKnown
+  url: well-known/suppco-well-known.yml
+- type: VulnerabilityDisclosure
+  url: security/suppco-vulnerability-disclosure.yml
+- type: Security
+  url: https://supp.co/.well-known/security.txt
+- type: DomainSecurity
+  url: security/suppco-domain-security.yml
 - type: Website
   url: https://supp.co
+- type: TermsOfService
+  url: https://supp.co/about/terms-of-use
+- type: PrivacyPolicy
+  url: https://supp.co/about/privacy-policy
+- type: Support
+  url: mailto:support@supp.co
+x-enrichment:
+  date: '2026-07-21'
+  status: enriched
+  artifacts_added: 4
+  pass: local-v1

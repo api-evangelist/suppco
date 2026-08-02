@@ -1,0 +1,26 @@
+#                   ====-                 
+#               -++++++++++-              
+#              ++++++++++++++             
+#             ++++++++++++++++            
+#             ++++++++++++++++            
+#             =+++++++++++++++            
+#              -++++++++++++++            
+#                 =+++++++++++            
+#                     ==++++++            
+#                          ==+            
+#             ==                          
+#             ======-                     
+#             ===========-                
+#             ==============-             
+#             ================            
+#             ================            
+#             ================            
+#              ==============             
+#                ==========               
+#                    --                   
+Contact: dev@supp.co
+Preferred-Languages: en
+
+# We are young but commited to the security of our users. 
+# We do not have a formal policy but wanted to get ahead of this until we do.
+# Thank you for taking the time to help us improve the security of our platform!
