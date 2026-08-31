@@ -57,6 +57,11 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: ParentCompany
+  url: https://apis.io/providers/function-health/
+  name: Function Health
+  x-relationship: acquired
+  x-evidence: "SuppCo is in open beta (free, with an optional Pro tier) and was acquired by Function Health. No public developer API, OpenAPI, or developer portal is currently published; this profile captures its public web, security, and legal surface."
 - type: SecurityTxt
   url: well-known/suppco-security.txt
 - type: WellKnown
