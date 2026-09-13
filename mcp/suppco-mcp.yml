@@ -1,0 +1,49 @@
+generated: '2026-09-11'
+method: probed
+source: https://api.supp.co/mcp
+status: published
+server:
+  name: suppco
+  transport: http
+  url: https://api.supp.co/mcp
+deployment:
+  mode: remote
+  endpoint: https://api.supp.co/mcp
+  verified: probed
+  probe: live
+  checked: '2026-09-11'
+  source: docs-check 2026-09-12 (endpoint found in the provider's own documentation, then probed)
+tools_count: 15
+tools:
+- name: suppco_find_products
+  description: ''
+- name: suppco_get_brand_trust_score
+  description: ''
+- name: suppco_search_effects
+  description: ''
+- name: suppco_get_nutrient_info
+  description: ''
+- name: suppco_search_protocols
+  description: ''
+- name: suppco_get_product_info
+  description: ''
+- name: suppco_get_my_stack
+  description: ''
+- name: suppco_get_my_nutrient_plan
+  description: ''
+- name: suppco_get_my_nutrient_totals
+  description: ''
+- name: suppco_get_my_protocols
+  description: ''
+- name: suppco_update_my_profile
+  description: ''
+- name: suppco_save_memory
+  description: ''
+- name: suppco_manage_stack
+  description: ''
+- name: suppco_get_my_lab_report
+  description: ''
+- name: suppco_get_stack_score
+  description: ''
+tools_source: live tools/list via initialize handshake, 2026-09-12 (signals/audit_mcp_authorship.py --probe)
+authorship: provider
