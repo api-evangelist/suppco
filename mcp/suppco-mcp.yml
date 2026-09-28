@@ -16,34 +16,45 @@ deployment:
 tools_count: 15
 tools:
 - name: suppco_find_products
-  description: ''
+  description: 'RECOMMENDED: Intelligently find supplement products using natural language. This tool
+    automatically determines the best search strategy for your query. Use for: product searches, category
+    browsing, recommendations, health goal searches. Exa'
 - name: suppco_get_brand_trust_score
-  description: ''
+  description: Get trust score, quality ratings, certifications, and testing history for a supplement
+    brand.
 - name: suppco_search_effects
-  description: ''
+  description: Search research-backed supplement-condition connections with evidence grades (A-F), confidence
+    levels, and supporting studies.
 - name: suppco_get_nutrient_info
-  description: ''
+  description: Get nutrient/supplement overview including dosing guidelines, health effects, and research
+    evidence.
 - name: suppco_search_protocols
-  description: ''
+  description: Search evidence-based health protocols with supplement stacks for specific health goals.
 - name: suppco_get_product_info
-  description: ''
+  description: Get complete product information including trust score, certifications, testing status,
+    active ingredients, inactive ingredients with risk assessments, and quality details. Accepts one or
+    more products by UUID, slug, or product name (max 5)
 - name: suppco_get_my_stack
-  description: ''
+  description: Get user's current supplement stack with all products, dosages, and daily totals.
 - name: suppco_get_my_nutrient_plan
-  description: ''
+  description: Get user's personalized supplement plan with recommended nutrients and dosages.
 - name: suppco_get_my_nutrient_totals
-  description: ''
+  description: Get total daily nutrients from current stack with comparisons to recommended values.
 - name: suppco_get_my_protocols
-  description: ''
+  description: Get health protocols user is following with progress tracking and supplement recommendations.
 - name: suppco_update_my_profile
-  description: ''
+  description: Update user's profile including age, sex, health goals, and supplement preferences.
 - name: suppco_save_memory
-  description: ''
+  description: Save a note or preference about the user for personalized future interactions.
 - name: suppco_manage_stack
-  description: ''
+  description: Add, remove, or swap products in user's supplement stack using natural language commands.
 - name: suppco_get_my_lab_report
-  description: ''
+  description: Get user's latest lab results with biomarker analysis, out-of-range values, and supplement
+    recommendations.
 - name: suppco_get_stack_score
-  description: ''
+  description: Get user's StackScore with ratings across Quality, Value, Goals, and Dosage categories
+    plus coaching recommendations.
 tools_source: live tools/list via initialize handshake, 2026-09-12 (signals/audit_mcp_authorship.py --probe)
 authorship: provider
+descriptions_source: live tools/list (authorship probe or saved capture); filled by backfill-tools-from-authorship.py
+  --descriptions, 2026-09-28
