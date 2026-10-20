@@ -13,47 +13,138 @@ deployment:
   probe: live
   checked: '2026-09-11'
   source: docs-check 2026-09-12 (endpoint found in the provider's own documentation, then probed)
-tools_count: 15
+tools_count: 30
 tools:
 - name: suppco_find_products
-  description: 'RECOMMENDED: Intelligently find supplement products using natural language. This tool
-    automatically determines the best search strategy for your query. Use for: product searches, category
-    browsing, recommendations, health goal searches. Exa'
-- name: suppco_get_brand_trust_score
-  description: Get trust score, quality ratings, certifications, and testing history for a supplement
-    brand.
-- name: suppco_search_effects
-  description: Search research-backed supplement-condition connections with evidence grades (A-F), confidence
-    levels, and supporting studies.
-- name: suppco_get_nutrient_info
-  description: Get nutrient/supplement overview including dosing guidelines, health effects, and research
-    evidence.
-- name: suppco_search_protocols
-  description: Search evidence-based health protocols with supplement stacks for specific health goals.
+  description: Find products based on user query - handles search, browsing, and recommendations. Use
+    this whenever the user wants to discover or find products.
 - name: suppco_get_product_info
-  description: Get complete product information including trust score, certifications, testing status,
-    active ingredients, inactive ingredients with risk assessments, and quality details. Accepts one or
-    more products by UUID, slug, or product name (max 5)
+  description: Look up detailed information (composition, ingredients, price, format, servings) for one
+    or more specific products by UUID, slug, or name. Use for "tell me about <product>" or to hydrate
+    products you only have ids for (e.g. from the user's stack). Accepts names when you don't have an
+    id yet. For TrustScore rationale, certifications, or testing, call suppco_get_product_trust_score
+    instead.
+- name: suppco_get_product_trust_score
+  description: 'Get TrustScore details and quality assessment for one or more products: score rationale/commentary,
+    certifications, testing and verified lab results, brand manufacturing/testing practices, and excipient
+    risk ratings. Accepts product ids/slugs/names (multiple). Call this before discussing why a product
+    is (or is not) trustworthy, its certifications, or its testing — the other product tools return only
+    the headline score number.'
+- name: suppco_compare_product_to_alternatives
+  description: Compare a product against alternatives in its category. Returns a detailed view of the
+    anchor product (trust score, ingredients, excipients) alongside filtered alternatives. Use when user
+    asks to compare, find alternatives, or asks "is there something better?"
+- name: suppco_find_buying_club_products
+  description: 'Open-ended search/browse of the SuppCo buying club catalog: free-text lookups ("Thorne
+    Magnesium") or filtered browsing by category, trust, price, form, certifications, and brand. Every
+    result is a buying-club product with member pricing and earnings credit (cashback). Use this when
+    the user is exploring a category with no specific current product in play. For finding an alternative
+    to a product the user already takes, use suppco_compare_to_buying_club instead (it returns their current
+    product as the anchor).'
+- name: suppco_compare_to_buying_club
+  description: Use this when the user asks whether the SuppCo Buying Club carries an alternative to a
+    specific product, usually one they already take. Returns that product plus Buying Club products in
+    the same category with TrustScore, price, member price and cashback.
+- name: suppco_get_brand_trust_score
+  description: Use this when the user asks how trustworthy or high-quality a specific supplement brand
+    is. Returns the brand's TrustScore with its quality assessment. Pass the brand's name, slug or UUID
+    as brand_query.
+- name: suppco_find_brands
+  description: Find and filter brands. Use this to search for brands by name or to list brands matching
+    specific criteria (e.g., brands that have been TESTED by SuppCo).
+- name: suppco_search_effects
+  description: 'Use this when the user asks what published research says about a supplement: its overall
+    effects, or whether it does something for a specific health area such as heart health, stress or focus.
+    Also use it when the user asks which supplements have the most research behind them for a health area.
+    Returns SuppCo''s summaries of published studies with evidence grades. General information only; does
+    not diagnose, treat or recommend treatment for any condition. For dosing and nutrient basics, use
+    suppco_get_nutrient_info; for a full supplement routine for a goal, use suppco_search_protocols.'
+- name: suppco_get_nutrient_info
+  description: 'Use this when the user asks about dosing for a specific nutrient or supplement: typical
+    daily intake ranges and upper limits from SuppCo''s references, timing and whether to take it with
+    food, plus a summary of its graded research. General information only; does not diagnose, treat or
+    give personalized dosing advice. For what studies say about a supplement for a specific health area,
+    use suppco_search_effects.'
+- name: suppco_search_protocols
+  description: Use this when the user asks for a supplement protocol for a health goal, such as sleep,
+    energy or weight loss. Searches SuppCo's protocols and returns the matches. For protocols the user
+    already follows, use suppco_get_my_protocols.
 - name: suppco_get_my_stack
-  description: Get user's current supplement stack with all products, dosages, and daily totals.
+  description: Use this when you need the signed-in user's current supplements, for example before recommending,
+    comparing, swapping or removing products. Returns every product in their stack with dosages and daily
+    totals, including the product IDs other SuppCo tools accept.
+- name: suppco_get_my_schedule
+  description: Get the user's current supplement schedule — shows when each product is taken (morning,
+    midday, evening, bedtime, workout), dose amounts per time slot, with_food flags, and schedule frequency.
+- name: suppco_update_product_schedule
+  description: 'Use this when the user wants to change when or how they take a product that is already
+    in their stack. Replaces that product''s schedule: time-of-day amounts, daily, specific-days or every-other-day
+    timing, as-needed, with food, and timing notes.'
 - name: suppco_get_my_nutrient_plan
-  description: Get user's personalized supplement plan with recommended nutrients and dosages.
+  description: Use this when the user asks which nutrients they should take or how much. Returns the signed-in
+    user's personalized plan with recommended nutrients and dosages. For what their current stack actually
+    provides, use suppco_get_my_nutrient_totals.
 - name: suppco_get_my_nutrient_totals
-  description: Get total daily nutrients from current stack with comparisons to recommended values.
+  description: Use this when the user asks how much of a nutrient their current supplements provide, or
+    whether they are over or under recommended amounts. Returns the daily nutrient totals from the signed-in
+    user's stack compared with recommended values.
 - name: suppco_get_my_protocols
-  description: Get health protocols user is following with progress tracking and supplement recommendations.
+  description: Use this when the user asks about the health protocols they are following. Returns the
+    signed-in user's protocols with progress and supplement recommendations. To find new protocols, use
+    suppco_search_protocols.
 - name: suppco_update_my_profile
-  description: Update user's profile including age, sex, health goals, and supplement preferences.
+  description: 'Use this when the user gives profile details they want saved: age, sex, health goals,
+    dietary preferences, experience level, buying preference, preferred form or biggest challenge. Only
+    the fields you pass are changed, and each one replaces the stored value. Saved preferences change
+    the defaults other SuppCo tools use, such as product search ranking.'
 - name: suppco_save_memory
-  description: Save a note or preference about the user for personalized future interactions.
+  description: Use this when the user explicitly asks SuppCo to remember a preference or fact about them
+    for future SuppCo conversations. Saves one short note to their SuppCo account.
+- name: suppco_add_to_stack
+  description: Use this when the user wants to start tracking a product in their SuppCo stack. Adds the
+    product to the signed-in user's stack. `id` is a SuppCo product UUID or slug from a search or product
+    result. This does not buy anything; to buy a Buying Club product, use suppco_add_to_cart.
+- name: suppco_remove_from_stack
+  description: Use this when the user has stopped taking a product or wants it off their SuppCo stack.
+    Removes the product from the signed-in user's stack. `id` is a SuppCo product UUID or slug, as shown
+    by suppco_get_my_stack.
+- name: suppco_swap_products
+  description: Use this when the user wants to replace a product in their stack with a different one,
+    for example after comparing alternatives. Removes old_product_id from the stack and adds new_product_id.
+    Both are SuppCo product UUIDs or slugs.
 - name: suppco_manage_stack
-  description: Add, remove, or swap products in user's supplement stack using natural language commands.
-- name: suppco_get_my_lab_report
-  description: Get user's latest lab results with biomarker analysis, out-of-range values, and supplement
-    recommendations.
+  description: 'Legacy: prefer suppco_add_to_stack / suppco_remove_from_stack / suppco_swap_products.
+    Add, remove, or swap products in user''s supplement stack using natural language commands.'
 - name: suppco_get_stack_score
-  description: Get user's StackScore with ratings across Quality, Value, Goals, and Dosage categories
-    plus coaching recommendations.
+  description: Use this when the user asks how good their supplement stack is or how to improve it. Returns
+    the signed-in user's StackScore with Quality, Value, Goals and Dosage ratings and coaching recommendations.
+    Pass category to get a single category.
+- name: suppco_refresh_stack_score
+  description: Kick off a StackScore refresh. The score recalculates asynchronously and takes a few minutes.
+    Only use when the user confirms they want to refresh.
+- name: suppco_add_to_cart
+  description: Add a Buying Club product to the signed-in user's cart (the same cart as the SuppCo app).
+    Use a product ID or slug from suppco_find_buying_club_products or suppco_compare_to_buying_club; only
+    Buying Club products can be added. Set subscription to true for a recurring subscription at the product's
+    recommended shipping interval. Returns the updated cart. This adds to any quantity already in the
+    cart, so calling it again adds more units; to set an exact quantity, use suppco_update_cart_item.
+- name: suppco_update_cart_item
+  description: Set the quantity of a product that is already in the signed-in user's cart. quantity is
+    the new total, not an amount to add, so repeating the call is safe; 0 removes the item. If the product
+    is in the cart as both a one-time purchase and a subscription, set subscription to choose which one
+    to change. Returns the updated cart.
+- name: suppco_remove_from_cart
+  description: Remove a product from the signed-in user's cart, or set remove_unavailable to true to clear
+    items that are no longer available. Removing a product removes every cart line for it, one-time and
+    subscription. Returns the updated cart.
+- name: suppco_get_my_cart
+  description: 'Get the signed-in user''s Buying Club cart: items, quantities, one-time or subscription,
+    prices, subtotal, available credit and estimated cashback, plus any items that are no longer available.'
+- name: suppco_get_checkout_url
+  description: Get a secure checkout link for the signed-in user's cart. The link signs the user into
+    checkout so member pricing and credit apply. It works once and expires after 10 minutes, so call this
+    only when the user is ready to pay and give them the link right away. Buying Club credit is applied
+    by default; set use_wallet to false if the user doesn't want to use their credit.
 tools_source: live tools/list via initialize handshake, 2026-09-12 (signals/audit_mcp_authorship.py --probe)
 authorship: provider
 descriptions_source: live tools/list (authorship probe or saved capture); filled by backfill-tools-from-authorship.py
