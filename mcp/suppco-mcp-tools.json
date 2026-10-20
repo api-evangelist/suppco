@@ -1,0 +1,1980 @@
+{
+  "endpoint": "https://api.supp.co/mcp",
+  "captured": "2026-10-20",
+  "method": "initialize + tools/list (anonymous, no tool called; roadmap#992)",
+  "protocol_version": "2025-06-18",
+  "server_info": {
+    "name": "suppco_mcp_server",
+    "version": "2.0.0"
+  },
+  "result": {
+    "tools": [
+      {
+        "name": "suppco_find_products",
+        "title": "Find products",
+        "description": "Find products based on user query - handles search, browsing, and recommendations. Use this whenever the user wants to discover or find products.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free text search for a specific product by name (e.g., \"Thorne Creatine\", \"AG1 Greens\"). Only use this when searching for a specific brand + product name with no filters. Do NOT use query together with other params — use product_category_name instead when filters like priority, brand, certifications, form, max_price, or servings are needed."
+            },
+            "product_category_name": {
+              "type": "string",
+              "description": "REQUIRED for all non-query searches. The supplement category (e.g., 'Vitamin D', 'Magnesium', 'Ashwagandha', 'Collagen'). ALWAYS provide this when using any filter params (priority, brand, certifications, form, max_price, servings, include_ingredients, exclude_ingredients). When the user asks for a supplement by name like 'ashwagandha' or 'magnesium', that IS the category."
+            },
+            "include_ingredients": {
+              "type": "string",
+              "description": "Comma-separated list of ADDITIONAL ingredients the product must also contain beyond its category (e.g., for 'collagen with hyaluronic acid', set product_category_name='Collagen' and include_ingredients='hyaluronic acid'). Do NOT put the primary supplement here — use product_category_name for that."
+            },
+            "exclude_ingredients": {
+              "type": "string",
+              "description": "Comma-separated list of ingredients the product must NOT contain (e.g., 'stevia,sucralose'). Matches against both active ingredients (supplements) and inactive ingredients (excipients)."
+            },
+            "priority": {
+              "type": "string",
+              "description": "How to rank results. Valid: best_value, most_trusted, most_popular, most_expensive. Omit (or leave blank) to apply the user's profile buying preference automatically; pass a value to override.",
+              "enum": [
+                "best_value",
+                "most_trusted",
+                "most_popular",
+                "most_expensive"
+              ]
+            },
+            "certifications": {
+              "type": "string",
+              "description": "Required certifications, comma-separated. Valid: gluten_free, non_gmo, vegan_action, usda_organic, nsf_sport, usp_verified, informed_sport, informed_choice, tested_by_suppco. Omit (or leave blank) to apply the user's profile dietary preferences (vegan, gluten-free) automatically; pass an explicit list to override."
+            },
+            "brand": {
+              "type": "string",
+              "description": "The brand a user prefers"
+            },
+            "max_price": {
+              "type": "number",
+              "description": "Maximum price in dollars (e.g., 50.00)"
+            },
+            "servings": {
+              "type": "string",
+              "description": "Comma-separated list of serving counts (e.g., '30,60,90')"
+            },
+            "form": {
+              "type": "string",
+              "description": "Comma-separated list of product forms. Valid forms are: capsule, tablet, softgel, gummy, powder, liquid, other (e.g., 'capsule,tablet')"
+            },
+            "tested": {
+              "type": "boolean",
+              "description": "When true, only return products that have been TESTED by SuppCo (identity, potency, and/or heavy metals testing performed by SuppCo's lab)"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Maximum number of products to return (default: 5, max: 50)",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Number of products to skip for pagination (default: 0)",
+              "minimum": 0
+            }
+          }
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Find products"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "noauth"
+            }
+          ],
+          "openai/toolInvocation/invoking": "Finding products...",
+          "openai/toolInvocation/invoked": "Found products"
+        }
+      },
+      {
+        "name": "suppco_get_product_info",
+        "title": "Get product info",
+        "description": "Look up detailed information (composition, ingredients, price, format, servings) for one or more specific products by UUID, slug, or name. Use for \"tell me about <product>\" or to hydrate products you only have ids for (e.g. from the user's stack). Accepts names when you don't have an id yet. For TrustScore rationale, certifications, or testing, call suppco_get_product_trust_score instead.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "products": {
+              "description": "One or more product identifiers (max 5): an array of strings, or one string separated by ' | '. Each can be a UUID, slug, or product name. Prefer the ids you already have from a previous product result.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "products"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Get product info"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "noauth"
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_get_product_trust_score",
+        "title": "Get product TrustScore",
+        "description": "Get TrustScore details and quality assessment for one or more products: score rationale/commentary, certifications, testing and verified lab results, brand manufacturing/testing practices, and excipient risk ratings. Accepts product ids/slugs/names (multiple). Call this before discussing why a product is (or is not) trustworthy, its certifications, or its testing — the other product tools return only the headline score number.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "products": {
+              "description": "One or more product identifiers (max 5): an array of strings, or one string separated by ' | '. Each can be a UUID, slug, or product name. Prefer the ids you already have from a previous product result.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "products"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Get product TrustScore"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "noauth"
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_compare_product_to_alternatives",
+        "title": "Compare product to alternatives",
+        "description": "Compare a product against alternatives in its category. Returns a detailed view of the anchor product (trust score, ingredients, excipients) alongside filtered alternatives. Use when user asks to compare, find alternatives, or asks \"is there something better?\"",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "product_id_or_slug": {
+              "type": "string",
+              "description": "Product ID (UUID), slug, or product name of the product to compare. Prefer slugs or UUIDs when available — they give exact matches."
+            },
+            "priority": {
+              "type": "string",
+              "description": "How to rank alternatives. Valid: best_value, most_trusted, most_popular, most_expensive. Omit (or leave blank) to apply the user's profile buying preference automatically; pass a value to override.",
+              "enum": [
+                "best_value",
+                "most_trusted",
+                "most_popular",
+                "most_expensive"
+              ]
+            },
+            "certifications": {
+              "type": "string",
+              "description": "Certifications filter, comma-separated. Valid: gluten_free, non_gmo, vegan_action, usda_organic, nsf_sport, usp_verified, informed_sport, informed_choice, tested_by_suppco. Omit (or leave blank) to apply the user's profile dietary preferences (vegan, gluten-free) automatically; pass an explicit list to override."
+            },
+            "max_price": {
+              "type": "number",
+              "description": "Maximum price in dollars"
+            },
+            "servings": {
+              "type": "string",
+              "description": "Comma-separated serving counts (e.g., '60,90')"
+            },
+            "form": {
+              "type": "string",
+              "description": "Product forms. Valid: capsule, tablet, softgel, gummy, powder, liquid, other"
+            }
+          },
+          "required": [
+            "product_id_or_slug"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Compare product to alternatives"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "noauth"
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_find_buying_club_products",
+        "title": "Find Buying Club products",
+        "description": "Open-ended search/browse of the SuppCo buying club catalog: free-text lookups (\"Thorne Magnesium\") or filtered browsing by category, trust, price, form, certifications, and brand. Every result is a buying-club product with member pricing and earnings credit (cashback). Use this when the user is exploring a category with no specific current product in play. For finding an alternative to a product the user already takes, use suppco_compare_to_buying_club instead (it returns their current product as the anchor).",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free-text search for a specific product by name (e.g., \"Thorne Creatine\"). Use alone, without filters. For filtered searches use product_category_name instead."
+            },
+            "product_category_name": {
+              "type": "string",
+              "description": "The supplement category to browse (e.g., 'Vitamin D', 'Magnesium', 'Creatine'). Required for any filtered search. When the user names a supplement like 'magnesium', that IS the category."
+            },
+            "priority": {
+              "type": "string",
+              "description": "How to rank results. Valid: best_value, most_trusted, most_popular, most_expensive. Defaults to most_trusted.",
+              "enum": [
+                "best_value",
+                "most_trusted",
+                "most_popular",
+                "most_expensive"
+              ]
+            },
+            "certifications": {
+              "type": "string",
+              "description": "Required certifications, comma-separated. Valid: gluten_free, non_gmo, vegan_action, usda_organic, nsf_sport, usp_verified, informed_sport, informed_choice, tested_by_suppco."
+            },
+            "brand": {
+              "type": "string",
+              "description": "Restrict to a specific brand."
+            },
+            "max_price": {
+              "type": "number",
+              "description": "Maximum price in dollars (e.g., 50.00)."
+            },
+            "servings": {
+              "type": "string",
+              "description": "Comma-separated serving counts (e.g., '30,60,90')."
+            },
+            "form": {
+              "type": "string",
+              "description": "Comma-separated product forms. Valid: capsule, tablet, softgel, gummy, powder, liquid, other."
+            },
+            "tested": {
+              "type": "boolean",
+              "description": "When true, only products TESTED by SuppCo."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max products to return (default: 5, max: 24).",
+              "minimum": 1,
+              "maximum": 24
+            },
+            "offset": {
+              "type": "integer",
+              "description": "Number of products to skip for pagination (default: 0).",
+              "minimum": 0
+            }
+          }
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Find Buying Club products"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "noauth"
+            }
+          ],
+          "openai/toolInvocation/invoking": "Finding Buying Club products...",
+          "openai/toolInvocation/invoked": "Found Buying Club products"
+        }
+      },
+      {
+        "name": "suppco_compare_to_buying_club",
+        "title": "Compare to Buying Club",
+        "description": "Use this when the user asks whether the SuppCo Buying Club carries an alternative to a specific product, usually one they already take. Returns that product plus Buying Club products in the same category with TrustScore, price, member price and cashback.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "product_id_or_slug": {
+              "type": "string",
+              "description": "The product to compare against the Buying Club — usually one the user already takes (e.g. from suppco_get_my_stack). A UUID, slug, or product name."
+            },
+            "priority": {
+              "type": "string",
+              "description": "How to rank alternatives. Valid: best_value, most_trusted, most_popular, most_expensive. Defaults to most_trusted.",
+              "enum": [
+                "best_value",
+                "most_trusted",
+                "most_popular",
+                "most_expensive"
+              ]
+            },
+            "certifications": {
+              "type": "string",
+              "description": "Required certifications, comma-separated. Valid: gluten_free, non_gmo, vegan_action, usda_organic, nsf_sport, usp_verified, informed_sport, informed_choice, tested_by_suppco."
+            },
+            "max_price": {
+              "type": "number",
+              "description": "Maximum price in dollars."
+            },
+            "servings": {
+              "type": "string",
+              "description": "Comma-separated serving counts (e.g., '30,60,90')."
+            },
+            "form": {
+              "type": "string",
+              "description": "Comma-separated product forms. Valid: capsule, tablet, softgel, gummy, powder, liquid, other."
+            }
+          },
+          "required": [
+            "product_id_or_slug"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Compare to Buying Club"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "noauth"
+            }
+          ],
+          "openai/toolInvocation/invoking": "Finding Buying Club alternatives...",
+          "openai/toolInvocation/invoked": "Found Buying Club alternatives"
+        }
+      },
+      {
+        "name": "suppco_get_brand_trust_score",
+        "title": "Get brand TrustScore",
+        "description": "Use this when the user asks how trustworthy or high-quality a specific supplement brand is. Returns the brand's TrustScore with its quality assessment. Pass the brand's name, slug or UUID as brand_query.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "brand_query": {
+              "type": "string",
+              "description": "Brand UUID, slug, or name (ex: '80a5d287-8ec2-4b61-9004-10103da1133d', 'life-extension', 'Life Extension')"
+            },
+            "brand_name": {
+              "type": "string",
+              "description": "Deprecated alias of brand_query"
+            }
+          }
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Get brand TrustScore"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "noauth"
+            }
+          ],
+          "openai/toolInvocation/invoking": "Loading brand information...",
+          "openai/toolInvocation/invoked": "Brand information loaded"
+        }
+      },
+      {
+        "name": "suppco_find_brands",
+        "title": "Find brands",
+        "description": "Find and filter brands. Use this to search for brands by name or to list brands matching specific criteria (e.g., brands that have been TESTED by SuppCo).",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Search for a brand by name (e.g., \"Thorne\", \"Garden of Life\"). Leave blank to list brands matching other filters."
+            },
+            "tested": {
+              "type": "boolean",
+              "description": "When true, only return brands that have participated in TESTED by SuppCo (independent lab testing for identity, potency, and heavy metals)"
+            }
+          }
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Find brands"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "noauth"
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_search_effects",
+        "title": "Search supplement effects",
+        "description": "Use this when the user asks what published research says about a supplement: its overall effects, or whether it does something for a specific health area such as heart health, stress or focus. Also use it when the user asks which supplements have the most research behind them for a health area. Returns SuppCo's summaries of published studies with evidence grades. General information only; does not diagnose, treat or recommend treatment for any condition. For dosing and nutrient basics, use suppco_get_nutrient_info; for a full supplement routine for a goal, use suppco_search_protocols.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "health_condition": {
+              "type": "string",
+              "description": "The health area or outcome to look up (e.g., \"Heart Health\", \"Bone & Joint Health\", \"Focus and Attention\"). Optional - omit to get all research for a supplement."
+            },
+            "supplement_name": {
+              "type": "string",
+              "description": "The supplement name (e.g., \"Fish Oil\", \"Magnesium\"). Optional - omit to search for all supplements related to the condition."
+            }
+          }
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Search supplement effects"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "noauth"
+            }
+          ],
+          "openai/toolInvocation/invoking": "Searching research...",
+          "openai/toolInvocation/invoked": "Research found"
+        }
+      },
+      {
+        "name": "suppco_get_nutrient_info",
+        "title": "Get nutrient info",
+        "description": "Use this when the user asks about dosing for a specific nutrient or supplement: typical daily intake ranges and upper limits from SuppCo's references, timing and whether to take it with food, plus a summary of its graded research. General information only; does not diagnose, treat or give personalized dosing advice. For what studies say about a supplement for a specific health area, use suppco_search_effects.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "nutrient_name": {
+              "type": "string",
+              "description": "The name of the nutrient or supplement (e.g., 'Vitamin D3', 'Magnesium', 'Fish Oil')"
+            }
+          },
+          "required": [
+            "nutrient_name"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Get nutrient info"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "noauth"
+            }
+          ],
+          "openai/toolInvocation/invoking": "Loading nutrient information...",
+          "openai/toolInvocation/invoked": "Nutrient information loaded"
+        }
+      },
+      {
+        "name": "suppco_search_protocols",
+        "title": "Search protocols",
+        "description": "Use this when the user asks for a supplement protocol for a health goal, such as sleep, energy or weight loss. Searches SuppCo's protocols and returns the matches. For protocols the user already follows, use suppco_get_my_protocols.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Query (e.g., 'Protocol for weight loss')"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": true,
+          "title": "Search protocols"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "noauth"
+            }
+          ],
+          "openai/toolInvocation/invoking": "Searching protocols...",
+          "openai/toolInvocation/invoked": "Protocols found"
+        }
+      },
+      {
+        "name": "suppco_get_my_stack",
+        "title": "Get my stack",
+        "description": "Use this when you need the signed-in user's current supplements, for example before recommending, comparing, swapping or removing products. Returns every product in their stack with dosages and daily totals, including the product IDs other SuppCo tools accept.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {}
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Get my stack"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ],
+          "openai/toolInvocation/invoking": "Loading your stack...",
+          "openai/toolInvocation/invoked": "Stack loaded"
+        }
+      },
+      {
+        "name": "suppco_get_my_schedule",
+        "title": "Get my schedule",
+        "description": "Get the user's current supplement schedule — shows when each product is taken (morning, midday, evening, bedtime, workout), dose amounts per time slot, with_food flags, and schedule frequency.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {}
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Get my schedule"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_update_product_schedule",
+        "title": "Update product schedule",
+        "description": "Use this when the user wants to change when or how they take a product that is already in their stack. Replaces that product's schedule: time-of-day amounts, daily, specific-days or every-other-day timing, as-needed, with food, and timing notes.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "product_id": {
+              "type": "string",
+              "description": "Product slug or UUID"
+            },
+            "schedule": {
+              "type": "string",
+              "description": "JSON array of time-slot assignments, e.g. [{\"activity\":\"morning\",\"units\":2},{\"activity\":\"bedtime\",\"units\":1}]. \"units\" is the number of capsules/tablets/scoops for that time slot — NOT servings. Valid activities: morning, midday, evening, bedtime, workout, unscheduled."
+            },
+            "as_needed": {
+              "type": "string",
+              "description": "Whether the product is taken as needed (true/false). Omit to keep the current value — only pass it when the user asked to change it."
+            },
+            "with_food": {
+              "type": "string",
+              "description": "Whether the product should be taken with food (true/false). Omit to keep the current value — only pass it when the user asked to change it."
+            },
+            "change_daily_amount": {
+              "type": "string",
+              "description": "Set true ONLY when the user asked to change how many units they take per day. Without it, a schedule whose total differs from the current daily amount is rejected, so timing changes keep the same total."
+            },
+            "schedule_type": {
+              "type": "string",
+              "description": "Schedule type: daily, specific_days, or every_other_day"
+            },
+            "schedule_days": {
+              "type": "string",
+              "description": "Array of day names (e.g. [\"monday\",\"wednesday\",\"friday\"]) for specific_days schedule_type"
+            },
+            "every_other_day_start": {
+              "type": "string",
+              "description": "When to start every_other_day schedule: \"today\" or \"tomorrow\""
+            },
+            "schedule_notes": {
+              "type": "string",
+              "description": "Brief timing instructions that the schedule cannot capture (e.g., \"take 2 hours apart from calcium\", \"take on empty stomach 30 min before bed\"). Set to empty string to clear."
+            }
+          },
+          "required": [
+            "product_id",
+            "schedule"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": false,
+          "title": "Update product schedule"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_get_my_nutrient_plan",
+        "title": "Get my nutrient plan",
+        "description": "Use this when the user asks which nutrients they should take or how much. Returns the signed-in user's personalized plan with recommended nutrients and dosages. For what their current stack actually provides, use suppco_get_my_nutrient_totals.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {}
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Get my nutrient plan"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ],
+          "openai/toolInvocation/invoking": "Loading your nutrient plan...",
+          "openai/toolInvocation/invoked": "Plan loaded"
+        }
+      },
+      {
+        "name": "suppco_get_my_nutrient_totals",
+        "title": "Get my nutrient totals",
+        "description": "Use this when the user asks how much of a nutrient their current supplements provide, or whether they are over or under recommended amounts. Returns the daily nutrient totals from the signed-in user's stack compared with recommended values.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {}
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Get my nutrient totals"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ],
+          "openai/toolInvocation/invoking": "Calculating nutrients...",
+          "openai/toolInvocation/invoked": "Nutrients calculated"
+        }
+      },
+      {
+        "name": "suppco_get_my_protocols",
+        "title": "Get my protocols",
+        "description": "Use this when the user asks about the health protocols they are following. Returns the signed-in user's protocols with progress and supplement recommendations. To find new protocols, use suppco_search_protocols.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {}
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Get my protocols"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ],
+          "openai/toolInvocation/invoking": "Loading your protocols...",
+          "openai/toolInvocation/invoked": "Protocols loaded"
+        }
+      },
+      {
+        "name": "suppco_update_my_profile",
+        "title": "Update my profile",
+        "description": "Use this when the user gives profile details they want saved: age, sex, health goals, dietary preferences, experience level, buying preference, preferred form or biggest challenge. Only the fields you pass are changed, and each one replaces the stored value. Saved preferences change the defaults other SuppCo tools use, such as product search ranking.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "age": {
+              "type": "integer",
+              "description": "User's age in years (integer between 13 and 150)",
+              "minimum": 13,
+              "maximum": 150
+            },
+            "sex": {
+              "type": "string",
+              "description": "User's biological sex (valid options: male, female, intersex, not_specified)",
+              "enum": [
+                "male",
+                "female",
+                "intersex",
+                "not_specified"
+              ]
+            },
+            "biggest_challenge": {
+              "type": "string",
+              "description": "User's biggest challenge with supplements (free text)"
+            },
+            "dietary_preferences": {
+              "type": "array",
+              "description": "User's dietary preferences as an array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "expertise": {
+              "type": "string",
+              "description": "User's experience level with supplements (valid options: Beginner, Routine, SuperUser)",
+              "enum": [
+                "Beginner",
+                "Routine",
+                "SuperUser"
+              ]
+            },
+            "buying_preference": {
+              "type": "string",
+              "description": "User's supplement buying preference (valid options: Highest quality available, Best value, Most affordable)",
+              "enum": [
+                "Highest quality available",
+                "Best value",
+                "Most affordable"
+              ]
+            },
+            "preferred_form": {
+              "type": "string",
+              "description": "User's preferred supplement form (valid options: Single Ingredient, Blends, Both)",
+              "enum": [
+                "Single Ingredient",
+                "Blends",
+                "Both"
+              ]
+            },
+            "health_goals": {
+              "type": "array",
+              "description": "User's health goals as an array, CSV string, or single string (valid options: Bone & Joint, Cardiovascular, Cognition, Detox, Energy, Essential Health, Fertility, Fitness, Gut Health, Hair & Skin, Immune Support, Inflammation, Longevity, Men's Hormones, Organ Function, Sexual Health, Sleep, Stress & Mood, Weight Management, Women's Hormones)",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": false,
+          "title": "Update my profile"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_save_memory",
+        "title": "Save a note about me",
+        "description": "Use this when the user explicitly asks SuppCo to remember a preference or fact about them for future SuppCo conversations. Saves one short note to their SuppCo account.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "memory": {
+              "type": "string",
+              "description": "The note to remember"
+            }
+          },
+          "required": [
+            "memory"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false,
+          "title": "Save a note about me"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_add_to_stack",
+        "title": "Add to stack",
+        "description": "Use this when the user wants to start tracking a product in their SuppCo stack. Adds the product to the signed-in user's stack. `id` is a SuppCo product UUID or slug from a search or product result. This does not buy anything; to buy a Buying Club product, use suppco_add_to_cart.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "SuppCo Product ID"
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false,
+          "title": "Add to stack"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_remove_from_stack",
+        "title": "Remove from stack",
+        "description": "Use this when the user has stopped taking a product or wants it off their SuppCo stack. Removes the product from the signed-in user's stack. `id` is a SuppCo product UUID or slug, as shown by suppco_get_my_stack.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "SuppCo Product ID"
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false,
+          "title": "Remove from stack"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_swap_products",
+        "title": "Swap stack products",
+        "description": "Use this when the user wants to replace a product in their stack with a different one, for example after comparing alternatives. Removes old_product_id from the stack and adds new_product_id. Both are SuppCo product UUIDs or slugs.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "old_product_id": {
+              "type": "string",
+              "description": "SuppCo Product ID to remove"
+            },
+            "new_product_id": {
+              "type": "string",
+              "description": "SuppCo Product ID to add"
+            }
+          },
+          "required": [
+            "old_product_id",
+            "new_product_id"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false,
+          "title": "Swap stack products"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_manage_stack",
+        "title": "Manage stack",
+        "description": "Legacy: prefer suppco_add_to_stack / suppco_remove_from_stack / suppco_swap_products. Add, remove, or swap products in user's supplement stack using natural language commands.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "action_description": {
+              "type": "string",
+              "description": "Natural language stack action. Examples: \"add thorne-vitamin-d-k2\", \"remove life-extension-magnesium\", \"swap thorne-creatine for momentous-creatine\""
+            }
+          },
+          "required": [
+            "action_description"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false,
+          "title": "Manage stack"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_get_stack_score",
+        "title": "Get my StackScore",
+        "description": "Use this when the user asks how good their supplement stack is or how to improve it. Returns the signed-in user's StackScore with Quality, Value, Goals and Dosage ratings and coaching recommendations. Pass category to get a single category.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "description": "Optional category filter: 'quality', 'value', 'goals', or 'dosage'. Omit to get all categories.",
+              "enum": [
+                "quality",
+                "value",
+                "goals",
+                "dosage"
+              ]
+            }
+          }
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Get my StackScore"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ],
+          "openai/toolInvocation/invoking": "Calculating your StackScore...",
+          "openai/toolInvocation/invoked": "StackScore loaded"
+        }
+      },
+      {
+        "name": "suppco_refresh_stack_score",
+        "title": "Refresh my StackScore",
+        "description": "Kick off a StackScore refresh. The score recalculates asynchronously and takes a few minutes. Only use when the user confirms they want to refresh.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {}
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false,
+          "title": "Refresh my StackScore"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "suppco_add_to_cart",
+        "title": "Add to cart",
+        "description": "Add a Buying Club product to the signed-in user's cart (the same cart as the SuppCo app). Use a product ID or slug from suppco_find_buying_club_products or suppco_compare_to_buying_club; only Buying Club products can be added. Set subscription to true for a recurring subscription at the product's recommended shipping interval. Returns the updated cart. This adds to any quantity already in the cart, so calling it again adds more units; to set an exact quantity, use suppco_update_cart_item.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "product_id_or_slug": {
+              "type": "string",
+              "description": "SuppCo product ID (UUID) or slug of a Buying Club product."
+            },
+            "quantity": {
+              "type": "integer",
+              "description": "Number of units to add (default 1).",
+              "minimum": 1
+            },
+            "subscription": {
+              "type": "boolean",
+              "description": "true to subscribe (recurring delivery), false for a one-time purchase (default false)."
+            }
+          },
+          "required": [
+            "product_id_or_slug"
+          ]
+        },
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "cart": {
+              "type": "object",
+              "properties": {
+                "cart_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "checkout_url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Plain Shopify cart link; use suppco_get_checkout_url for the signed-in checkout link."
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Cart line ID"
+                      },
+                      "quantity": {
+                        "type": "integer"
+                      },
+                      "merchandise": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "slug": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "SuppCo product slug for cart tools"
+                          },
+                          "price": {
+                            "type": "object"
+                          }
+                        }
+                      },
+                      "selling_plan": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "description": "Present when the item is a subscription"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "quantity",
+                      "merchandise"
+                    ]
+                  }
+                },
+                "cost": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": [
+                        "string",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "subtotal": {
+                      "type": [
+                        "number",
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "currency": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "items_count": {
+                  "type": "integer"
+                },
+                "wallet": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "cashback": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "stale_items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "has_stale_items": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "items",
+                "cost",
+                "items_count"
+              ]
+            }
+          },
+          "required": [
+            "cart"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Add to cart"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ],
+          "openai/toolInvocation/invoking": "Adding to cart...",
+          "openai/toolInvocation/invoked": "Added to cart"
+        }
+      },
+      {
+        "name": "suppco_update_cart_item",
+        "title": "Update cart item",
+        "description": "Set the quantity of a product that is already in the signed-in user's cart. quantity is the new total, not an amount to add, so repeating the call is safe; 0 removes the item. If the product is in the cart as both a one-time purchase and a subscription, set subscription to choose which one to change. Returns the updated cart.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "product_id_or_slug": {
+              "type": "string",
+              "description": "SuppCo product ID (UUID) or slug of a product in the cart, as shown by suppco_get_my_cart."
+            },
+            "quantity": {
+              "type": "integer",
+              "description": "New total number of units for this item. 0 removes it.",
+              "minimum": 0
+            },
+            "subscription": {
+              "type": "boolean",
+              "description": "true to change the subscription item, false for the one-time item. Only needed when the product is in the cart as both."
+            }
+          },
+          "required": [
+            "product_id_or_slug",
+            "quantity"
+          ]
+        },
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "cart": {
+              "type": "object",
+              "properties": {
+                "cart_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "checkout_url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Plain Shopify cart link; use suppco_get_checkout_url for the signed-in checkout link."
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Cart line ID"
+                      },
+                      "quantity": {
+                        "type": "integer"
+                      },
+                      "merchandise": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "slug": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "SuppCo product slug for cart tools"
+                          },
+                          "price": {
+                            "type": "object"
+                          }
+                        }
+                      },
+                      "selling_plan": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "description": "Present when the item is a subscription"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "quantity",
+                      "merchandise"
+                    ]
+                  }
+                },
+                "cost": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": [
+                        "string",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "subtotal": {
+                      "type": [
+                        "number",
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "currency": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "items_count": {
+                  "type": "integer"
+                },
+                "wallet": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "cashback": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "stale_items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "has_stale_items": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "items",
+                "cost",
+                "items_count"
+              ]
+            }
+          },
+          "required": [
+            "cart"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Update cart item"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ],
+          "openai/toolInvocation/invoking": "Updating your cart...",
+          "openai/toolInvocation/invoked": "Cart updated"
+        }
+      },
+      {
+        "name": "suppco_remove_from_cart",
+        "title": "Remove from cart",
+        "description": "Remove a product from the signed-in user's cart, or set remove_unavailable to true to clear items that are no longer available. Removing a product removes every cart line for it, one-time and subscription. Returns the updated cart.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "product_id_or_slug": {
+              "type": "string",
+              "description": "SuppCo product ID (UUID) or slug of the product to remove, as shown by suppco_get_my_cart."
+            },
+            "remove_unavailable": {
+              "type": "boolean",
+              "description": "true to remove every item that is no longer available (the stale items suppco_get_my_cart lists)."
+            }
+          }
+        },
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "cart": {
+              "type": "object",
+              "properties": {
+                "cart_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "checkout_url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Plain Shopify cart link; use suppco_get_checkout_url for the signed-in checkout link."
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Cart line ID"
+                      },
+                      "quantity": {
+                        "type": "integer"
+                      },
+                      "merchandise": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "slug": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "SuppCo product slug for cart tools"
+                          },
+                          "price": {
+                            "type": "object"
+                          }
+                        }
+                      },
+                      "selling_plan": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "description": "Present when the item is a subscription"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "quantity",
+                      "merchandise"
+                    ]
+                  }
+                },
+                "cost": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": [
+                        "string",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "subtotal": {
+                      "type": [
+                        "number",
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "currency": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "items_count": {
+                  "type": "integer"
+                },
+                "wallet": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "cashback": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "stale_items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "has_stale_items": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "items",
+                "cost",
+                "items_count"
+              ]
+            }
+          },
+          "required": [
+            "cart"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Remove from cart"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ],
+          "openai/toolInvocation/invoking": "Removing from cart...",
+          "openai/toolInvocation/invoked": "Removed from cart"
+        }
+      },
+      {
+        "name": "suppco_get_my_cart",
+        "title": "Get my cart",
+        "description": "Get the signed-in user's Buying Club cart: items, quantities, one-time or subscription, prices, subtotal, available credit and estimated cashback, plus any items that are no longer available.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "cart": {
+              "type": "object",
+              "properties": {
+                "cart_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "checkout_url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Plain Shopify cart link; use suppco_get_checkout_url for the signed-in checkout link."
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Cart line ID"
+                      },
+                      "quantity": {
+                        "type": "integer"
+                      },
+                      "merchandise": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "slug": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "SuppCo product slug for cart tools"
+                          },
+                          "price": {
+                            "type": "object"
+                          }
+                        }
+                      },
+                      "selling_plan": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "description": "Present when the item is a subscription"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "quantity",
+                      "merchandise"
+                    ]
+                  }
+                },
+                "cost": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": [
+                        "string",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "subtotal": {
+                      "type": [
+                        "number",
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "currency": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "items_count": {
+                  "type": "integer"
+                },
+                "wallet": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "cashback": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "stale_items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "has_stale_items": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "items",
+                "cost",
+                "items_count"
+              ]
+            }
+          },
+          "required": [
+            "cart"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true,
+          "title": "Get my cart"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ],
+          "openai/toolInvocation/invoking": "Loading your cart...",
+          "openai/toolInvocation/invoked": "Cart loaded"
+        }
+      },
+      {
+        "name": "suppco_get_checkout_url",
+        "title": "Get checkout link",
+        "description": "Get a secure checkout link for the signed-in user's cart. The link signs the user into checkout so member pricing and credit apply. It works once and expires after 10 minutes, so call this only when the user is ready to pay and give them the link right away. Buying Club credit is applied by default; set use_wallet to false if the user doesn't want to use their credit.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "use_wallet": {
+              "type": "boolean",
+              "description": "Apply the user's Buying Club credit to this order (default true)."
+            }
+          }
+        },
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "checkout_url": {
+              "type": "string",
+              "description": "Single-use signed-in checkout link"
+            },
+            "expires_in_minutes": {
+              "type": "integer"
+            },
+            "single_use": {
+              "type": "boolean"
+            },
+            "wallet_applied": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "wallet_amount": {
+              "type": "number"
+            },
+            "cart": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "cart_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "checkout_url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Plain Shopify cart link; use suppco_get_checkout_url for the signed-in checkout link."
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Cart line ID"
+                      },
+                      "quantity": {
+                        "type": "integer"
+                      },
+                      "merchandise": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "slug": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "SuppCo product slug for cart tools"
+                          },
+                          "price": {
+                            "type": "object"
+                          }
+                        }
+                      },
+                      "selling_plan": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "description": "Present when the item is a subscription"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "quantity",
+                      "merchandise"
+                    ]
+                  }
+                },
+                "cost": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": [
+                        "string",
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "subtotal": {
+                      "type": [
+                        "number",
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "currency": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "items_count": {
+                  "type": "integer"
+                },
+                "wallet": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "cashback": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "stale_items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "has_stale_items": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "items",
+                "cost",
+                "items_count"
+              ]
+            }
+          },
+          "required": [
+            "checkout_url",
+            "expires_in_minutes",
+            "single_use"
+          ]
+        },
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true,
+          "readOnlyHint": false,
+          "title": "Get checkout link"
+        },
+        "_meta": {
+          "securitySchemes": [
+            {
+              "type": "oauth2",
+              "scopes": [
+                "mcp"
+              ]
+            }
+          ],
+          "openai/toolInvocation/invoking": "Creating checkout link...",
+          "openai/toolInvocation/invoked": "Checkout link ready"
+        }
+      }
+    ]
+  }
+}
